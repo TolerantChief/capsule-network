@@ -44,6 +44,11 @@ datasets = {
     'MNIST': torchvision.datasets.MNIST,
     'CIFAR': torchvision.datasets.CIFAR10
 }
+# dataset defaults
+split_train = {'train': True}
+split_test = {'train': False}
+size = 32
+mean, std = ((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
 
 if args.dataset.upper() == 'MNIST':
     args.data_path = os.path.join(args.data_path, 'MNIST')
@@ -55,6 +60,12 @@ elif args.dataset.upper() == 'CIFAR':
     size = 32
     classes = ['plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
     mean, std = ( (0.5, 0.5, 0.5), (0.5, 0.5, 0.5) )
+elif args.dataset.upper() == 'JAMONES':
+	args.data_path = os.path.join(args.data_path, 'JAMONES')
+	classes = list(range(26))
+	size = 32
+	split_train = {'split': "train"}
+	split_test = {'split': "test"}
 else:
     raise ValueError('Dataset must be either MNIST or CIFAR')
 
@@ -66,11 +77,26 @@ transform = transforms.Compose([
 ])
 
 loaders = {}
-trainset = datasets[args.dataset.upper()](root=args.data_path, train=True, download=True, transform=transform)
-loaders['train'] = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=2)
+if args.dataset.upper() not in datasets:
+	test_size = 0.2
+	dataset = torchvision.datasets.ImageFolder(root=args.data_path, transform=transform)
+	num_data = len(dataset)
+	num_test = int(test_size * num_data)
+	num_train = num_data - num_test
+	train_dataset, test_dataset = torch.utils.data.random_split(dataset, [num_train, num_test])
+	loaders['train'] = torch.utils.data.DataLoader(train_dataset, batch_size=32, shuffle=True)
+	loaders['test'] = torch.utils.data.DataLoader(test_dataset, batch_size=32, shuffle=False)
+else:	
+	trainset = datasets[args.dataset.upper()](
+		root=args.data_path, **split_train, download=True, transform=transform)
+	loaders['train'] = torch.utils.data.DataLoader(
+		trainset, batch_size=args.batch_size, shuffle=True, num_workers=2)
 
-testset = datasets[args.dataset.upper()](root=args.data_path, train=False, download=True, transform=transform)
-loaders['test'] = torch.utils.data.DataLoader(testset, batch_size=args.batch_size, shuffle=False, num_workers=2)
+	testset = datasets[args.dataset.upper()](
+		root=args.data_path, **split_test, download=True, transform=transform)
+	loaders['test'] = torch.utils.data.DataLoader(
+		testset, batch_size=args.batch_size, shuffle=False, num_workers=2)
+
 print(8*'#', f'Using {args.dataset.upper()} dataset', 8*'#')
 
 # Run
