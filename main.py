@@ -5,7 +5,7 @@ import torchvision.transforms as transforms
 from trainer import CapsNetTrainer
 import argparse
 
-DATA_PATH = os.path.join(os.environ['data'])
+DATA_PATH = '/content/data/'
 
 # Collect arguments (if any)
 parser = argparse.ArgumentParser()
