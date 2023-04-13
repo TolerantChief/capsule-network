@@ -11,7 +11,7 @@ DATA_PATH = '/content/data/'
 parser = argparse.ArgumentParser()
 
 # MNIST or CIFAR?
-parser.add_argument('dataset', nargs='?', type=str, default='MNIST', help="'MNIST' or 'CIFAR' (case insensitive).")
+parser.add_argument('--dataset', nargs='?', type=str, default='MNIST', help="'MNIST' or 'CIFAR' (case insensitive).")
 # Batch size
 parser.add_argument('-bs', '--batch_size', type=int, default=128, help='Batch size.')
 # Epochs
